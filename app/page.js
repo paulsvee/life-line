@@ -808,7 +808,7 @@ export default function Page() {
       <section className="line-frame">
         <div className="line-brand-row">
           <p className="eyebrow">Life</p>
-          <p className="brand-hint">터치스크린에서 가장 잘 작동합니다</p>
+          <p className="brand-hint">터치스크린 UX로 제작되어, 터치 기기에서 가장 잘 작동합니다.</p>
         </div>
 
         <div className="composer composer-inline">
