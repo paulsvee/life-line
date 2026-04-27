@@ -278,6 +278,13 @@ input {
   text-transform: uppercase;
 }
 
+.brand-hint {
+  margin: 0;
+  color: var(--fg-muted, rgba(255, 255, 255, 0.3));
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
 .view-controls {
   display: inline-flex;
   align-items: center;
