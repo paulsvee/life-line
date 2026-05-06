@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../../lib/auth";
+import { authOptions, isAuthConfigured } from "../../../lib/auth";
 import { getLineForSession } from "../../../lib/personal-line";
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const session = isAuthConfigured() ? await getServerSession(authOptions) : null;
   const line = await getLineForSession(session);
 
   return NextResponse.json({
