@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
-import { getLine, saveLine } from "../../../../lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../../lib/auth";
+import { getLineForSession, saveLineForSession } from "../../../../lib/personal-line";
 
-export function GET(_, { params }) {
-  const line = getLine(params.id);
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  const line = await getLineForSession(session);
   if (!line) {
     return NextResponse.json({ ok: false, error: "not found" }, { status: 404 });
   }
@@ -12,6 +15,11 @@ export function GET(_, { params }) {
 
 export async function PUT(request, { params }) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ ok: false, error: "authentication required" }, { status: 401 });
+    }
+
     const body = await request.json();
     const anchor = typeof body?.anchor === "string" && body.anchor.trim()
       ? body.anchor.trim()
@@ -27,7 +35,7 @@ export async function PUT(request, { params }) {
       return typeof color === "string" && color ? color : null;
     });
 
-    const line = saveLine({
+    const line = await saveLineForSession(session, {
       id: params.id,
       anchor,
       keywordsInput,

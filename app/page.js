@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { signIn, signOut } from "next-auth/react";
 
 const PALETTE = [
   "#FFEA00",
@@ -215,6 +216,8 @@ export default function Page() {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("wrapMode") === "1";
   });
+  const [viewer, setViewer] = useState({ authenticated: false });
+  const [canWrite, setCanWrite] = useState(false);
   const [inspirationMotion] = useState(() => createInspirationMotion());
   const [chipRows, setChipRows] = useState(null);
 
@@ -279,6 +282,8 @@ export default function Page() {
         setLineId(data.line.id);
         setChips(nextChips);
         setColors(normalizeColors(data.line?.colors, nextChips.length));
+        setViewer(data.viewer || { authenticated: false });
+        setCanWrite(Boolean(data.canWrite));
       } finally {
         setHydrated(true);
       }
@@ -427,6 +432,7 @@ export default function Page() {
   };
 
   const persistLine = async (nextChips, nextColors) => {
+    if (!canWrite) return;
     await fetch(`/api/line/${lineId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -443,6 +449,7 @@ export default function Page() {
   persistLineRef.current = persistLine;
 
   const applyInputs = async (nextAnchor = anchor, nextKeywords = keywordsInput) => {
+    if (!canWrite) return;
     const trimmedAnchor = nextAnchor.trim();
     const nextKeywordList = normalizeKeywords(nextKeywords);
     const existingAnchor = chips[0] ?? "";
@@ -498,6 +505,7 @@ export default function Page() {
   };
 
   const handleDragStart = (index, event) => {
+    if (!canWrite) return;
     if (index === 0) return;
     event.preventDefault();
     event.stopPropagation();
@@ -657,6 +665,7 @@ export default function Page() {
   };
 
   const handleEdit = () => {
+    if (!canWrite) return;
     setAnchor(chips[0] ?? "");
     setKeywordsInput(chips.slice(1).join(", "));
     setIsEditing(true);
@@ -668,6 +677,7 @@ export default function Page() {
   };
 
   const handleDelete = async () => {
+    if (!canWrite) return;
     if (!window.confirm("Are you sure you want to delete?")) return;
     const nextChips = [""];
     const nextColors = [null];
@@ -682,6 +692,7 @@ export default function Page() {
   };
 
   const handleDeleteChip = async (index) => {
+    if (!canWrite) return;
     pushHistory();
     const nextChips = chips.filter((_, i) => i !== index);
     const nextColors = colors.filter((_, i) => i !== index);
@@ -694,6 +705,7 @@ export default function Page() {
   };
 
   const handlePickColor = async (index, color) => {
+    if (!canWrite) return;
     pushHistory();
     const nextColors = normalizeColors(colors, chips.length);
     nextColors[index] = color;
@@ -734,10 +746,12 @@ export default function Page() {
                 type="button"
                 className={`chip-dots${chipMenuIndex === index ? " is-open" : ""}`}
                 onClick={(event) => {
+                  if (!canWrite) return;
                   event.stopPropagation();
                   setChipMenuIndex(index);
                   setMenuOpen(false);
                 }}
+                disabled={!canWrite}
                 aria-label={`Color menu for ${index}`}
               >
                 <DotsIcon size={14} />
@@ -750,7 +764,8 @@ export default function Page() {
             <button
               className={`chip-menu-button${menuOpen ? " is-open" : ""}`}
               type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
+              onClick={() => canWrite && setMenuOpen((prev) => !prev)}
+              disabled={!canWrite}
               aria-label="Line menu"
             >
               <span />
@@ -807,8 +822,20 @@ export default function Page() {
 
       <section className="line-frame">
         <div className="line-brand-row">
-          <p className="eyebrow">Life</p>
+          <div>
+            <p className="eyebrow">Life</p>
+            <p className="auth-status">
+              {viewer.authenticated ? `${viewer.email} personal line` : "Sample line"}
+            </p>
+          </div>
           <p className="brand-hint">터치스크린 UX로 제작되어, 터치 기기에서 가장 잘 작동합니다.</p>
+          <button
+            type="button"
+            className="auth-button"
+            onClick={() => viewer.authenticated ? signOut({ callbackUrl: "/" }) : signIn("google")}
+          >
+            {viewer.authenticated ? "Logout" : "Google Login"}
+          </button>
         </div>
 
         <div className="composer composer-inline">
@@ -825,6 +852,7 @@ export default function Page() {
                 }
               }}
               placeholder="Most important keyword"
+              disabled={!canWrite}
             />
           </label>
 
@@ -842,6 +870,7 @@ export default function Page() {
                 }
               }}
               placeholder="Life priority keywords, separate with commas. Press Enter to add"
+              disabled={!canWrite}
             />
           </label>
 
