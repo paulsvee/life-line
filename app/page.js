@@ -228,6 +228,7 @@ export default function Page() {
   const [viewer, setViewer] = useState({ authenticated: false });
   const [canWrite, setCanWrite] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+  const [authNotice, setAuthNotice] = useState("");
   const [inspirationMotion] = useState(() => createInspirationMotion());
   const [chipRows, setChipRows] = useState(null);
 
@@ -730,7 +731,12 @@ export default function Page() {
       signOut({ callbackUrl: "/" });
       return;
     }
-    if (!authReady) return;
+    if (!authReady) {
+      setAuthNotice("로그인 설정이 아직 필요합니다");
+      window.clearTimeout(handleAuthClick.timer);
+      handleAuthClick.timer = window.setTimeout(() => setAuthNotice(""), 2400);
+      return;
+    }
     signIn("google");
   };
 
@@ -851,13 +857,14 @@ export default function Page() {
           <p className="brand-hint">터치스크린 UX로 제작되어, 터치 기기에서 가장 잘 작동합니다.</p>
           <button
             type="button"
-            className={`auth-button${!viewer.authenticated && !authReady ? " is-disabled" : ""}`}
+            className="auth-button"
             onClick={handleAuthClick}
             aria-label={viewer.authenticated ? "로그아웃" : "로그인"}
             title={!viewer.authenticated && !authReady ? "로그인 설정이 아직 필요합니다" : viewer.authenticated ? "로그아웃" : "로그인"}
           >
             <KeyIcon />
           </button>
+          {authNotice ? <div className="auth-notice">{authNotice}</div> : null}
         </div>
 
         <div className="composer composer-inline">
