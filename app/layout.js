@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Life",
+  title: "폴스비 Life",
   description: "A one-line life planner with draggable chips.",
 };
 
