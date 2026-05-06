@@ -314,6 +314,11 @@ input {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
+.auth-button.is-logout {
+  color: var(--point);
+  border-color: rgba(255, 163, 127, 0.28);
+}
+
 .auth-notice {
   position: absolute;
   right: 48px;

@@ -207,6 +207,15 @@ function KeyIcon({ size = 17 }) {
   );
 }
 
+function PowerIcon({ size = 17 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3.8v7.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M7.1 7.4a7 7 0 1 0 9.8 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export default function Page() {
   const [lineId, setLineId] = useState(DEFAULT_STATE.id);
   const [anchor, setAnchor] = useState(DEFAULT_STATE.anchor);
@@ -857,12 +866,12 @@ export default function Page() {
           <p className="brand-hint">터치스크린 UX로 제작되어, 터치 기기에서 가장 잘 작동합니다.</p>
           <button
             type="button"
-            className="auth-button"
+            className={`auth-button${viewer.authenticated ? " is-logout" : ""}`}
             onClick={handleAuthClick}
             aria-label={viewer.authenticated ? "로그아웃" : "로그인"}
             title={!viewer.authenticated && !authReady ? "로그인 설정이 아직 필요합니다" : viewer.authenticated ? "로그아웃" : "로그인"}
           >
-            <KeyIcon />
+            {viewer.authenticated ? <PowerIcon /> : <KeyIcon />}
           </button>
           {authNotice ? <div className="auth-notice">{authNotice}</div> : null}
         </div>
