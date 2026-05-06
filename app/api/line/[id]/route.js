@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions, isAuthConfigured } from "../../../../lib/auth";
 import { getLineForSession, saveLineForSession } from "../../../../lib/personal-line";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = isAuthConfigured() ? await getServerSession(authOptions) : null;
   const line = await getLineForSession(session);
