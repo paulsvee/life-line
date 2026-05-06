@@ -6,7 +6,8 @@ import { getLineForSession } from "../../../lib/personal-line";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const session = isAuthConfigured() ? await getServerSession(authOptions) : null;
+  const authReady = isAuthConfigured();
+  const session = authReady ? await getServerSession(authOptions) : null;
   const line = await getLineForSession(session);
 
   return NextResponse.json({
@@ -21,5 +22,6 @@ export async function GET() {
         }
       : { authenticated: false },
     canWrite: !!session?.user,
+    authReady,
   });
 }

@@ -198,6 +198,15 @@ function ShareIcon({ size = 16 }) {
   );
 }
 
+function KeyIcon({ size = 17 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="7.5" cy="12.5" r="3.5" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M11 12.5h8.5M16 12.5v-3M19.5 12.5v-2.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function Page() {
   const [lineId, setLineId] = useState(DEFAULT_STATE.id);
   const [anchor, setAnchor] = useState(DEFAULT_STATE.anchor);
@@ -218,6 +227,7 @@ export default function Page() {
   });
   const [viewer, setViewer] = useState({ authenticated: false });
   const [canWrite, setCanWrite] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [inspirationMotion] = useState(() => createInspirationMotion());
   const [chipRows, setChipRows] = useState(null);
 
@@ -284,6 +294,7 @@ export default function Page() {
         setColors(normalizeColors(data.line?.colors, nextChips.length));
         setViewer(data.viewer || { authenticated: false });
         setCanWrite(Boolean(data.canWrite));
+        setAuthReady(Boolean(data.authReady));
       } finally {
         setHydrated(true);
       }
@@ -714,6 +725,15 @@ export default function Page() {
     await persistLine(chips, nextColors);
   };
 
+  const handleAuthClick = () => {
+    if (viewer.authenticated) {
+      signOut({ callbackUrl: "/" });
+      return;
+    }
+    if (!authReady) return;
+    signIn("google");
+  };
+
   const renderChipCluster = (index) => {
     const chip = chips[index];
     const locked = index === 0;
@@ -825,16 +845,18 @@ export default function Page() {
           <div>
             <p className="eyebrow">Life</p>
             <p className="auth-status">
-              {viewer.authenticated ? `${viewer.email} personal line` : "Sample line"}
+              {viewer.authenticated ? `${viewer.email} 개인 라인` : "샘플 라인"}
             </p>
           </div>
           <p className="brand-hint">터치스크린 UX로 제작되어, 터치 기기에서 가장 잘 작동합니다.</p>
           <button
             type="button"
-            className="auth-button"
-            onClick={() => viewer.authenticated ? signOut({ callbackUrl: "/" }) : signIn("google")}
+            className={`auth-button${!viewer.authenticated && !authReady ? " is-disabled" : ""}`}
+            onClick={handleAuthClick}
+            aria-label={viewer.authenticated ? "로그아웃" : "로그인"}
+            title={!viewer.authenticated && !authReady ? "로그인 설정이 아직 필요합니다" : viewer.authenticated ? "로그아웃" : "로그인"}
           >
-            {viewer.authenticated ? "Logout" : "Google Login"}
+            <KeyIcon />
           </button>
         </div>
 
